@@ -1,11 +1,10 @@
 
-public abstract class DataAdapter {
+public interface DataAdapter {
 	
+	public boolean subscribe();
 	
-	private void subscribe(){
-		
-	}
+	public boolean unsubscribe();
 	
-	
+	//public Object getData();
 
 }
