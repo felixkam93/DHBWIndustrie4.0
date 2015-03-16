@@ -16,7 +16,7 @@ public class Test {
            // System.out.println("Value: " + value);
            // System.out.println("Timestamp: " + timestamp);
 
-           // System.out.println(opcAD1.getValue());
+           
             System.out.println(opcAD1.getValueAlt());
             Thread.sleep(2000);
         }
