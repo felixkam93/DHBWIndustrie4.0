@@ -4,7 +4,8 @@ public interface DataAdapter {
 	public boolean subscribe();
 	
 	public boolean unsubscribe();
-	
-	//public Object getData();
+
+    public String getValue();
+    public String getType();
 
 }

@@ -3,15 +3,12 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Locale;
 
+import com.prosysopc.ua.nodes.UaType;
+import com.prosysopc.ua.nodes.UaVariable;
 import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.LocalizedText;
 import org.opcfoundation.ua.builtintypes.NodeId;
-import org.opcfoundation.ua.core.ApplicationDescription;
-import org.opcfoundation.ua.core.ApplicationType;
-import org.opcfoundation.ua.core.Attributes;
-import org.opcfoundation.ua.core.Identifiers;
-import org.opcfoundation.ua.core.MonitoringMode;
-import org.opcfoundation.ua.core.ReferenceDescription;
+import org.opcfoundation.ua.core.*;
 import org.opcfoundation.ua.transport.security.SecurityMode;
 
 import com.prosysopc.ua.ApplicationIdentity;
@@ -24,9 +21,14 @@ import com.prosysopc.ua.client.UaClient;
 
 public class OPCAdapter implements DataAdapter{
 	
-	UaClient client;
-	
+	private UaClient client;
+    private String currentValue;
+    private String currentTimestamp;
+    private String alternativeString;
+    private String type;
+
 	public OPCAdapter(String url, int namespaceIndex, String identifier ) throws Exception{
+
 		
 		// Create client object 
 				client = new UaClient(url);
@@ -34,7 +36,7 @@ public class OPCAdapter implements DataAdapter{
 				
 				initialize(client);
 				client.connect();
-				DataValue value = client.readValue(Identifiers.Server_ServerStatus_State);
+				final DataValue value = client.readValue(Identifiers.Server_ServerStatus_State);
 
 				client.getAddressSpace().setMaxReferencesPerNode(1000);
 				NodeId nid = Identifiers.RootFolder; 
@@ -54,17 +56,31 @@ public class OPCAdapter implements DataAdapter{
 				
 				Subscription subscription = new Subscription();
 				MonitoredDataItem item = new MonitoredDataItem(target2, Attributes.Value, MonitoringMode.Reporting);
-				
+
+
 				subscription.addItem(item);
 				client.addSubscription(subscription);
-				
-				
-				item.setDataChangeListener(new MonitoredDataItemListener() {
+                UaVariable variable = (UaVariable) client
+                        .getAddressSpace().getNode(target2);
+                NodeId dataTypeId = variable.getDataTypeId();
+                UaType dataType = variable.getDataType();
+
+                this.type = dataType.getDisplayName().getText();
+
+
+
+        item.setDataChangeListener(new MonitoredDataItemListener() {
 					
 					@Override
 					public void onDataChange(MonitoredDataItem arg0, DataValue arg1,
 							DataValue arg2) {
-						System.out.println(arg1);
+                        //System.out.println(arg1);
+                        alternativeString = arg1.toString();
+                        currentValue = arg1.getValue().toString();
+                        currentTimestamp = arg1.getSourceTimestamp().toString();
+                        //System.out.println(currentValue);
+
+
 						
 					}
 				});				
@@ -83,8 +99,23 @@ public class OPCAdapter implements DataAdapter{
 
 		return true;
 	}
-	
-	protected void initialize(UaClient client) throws SecureIdentityException, IOException, UnknownHostException {
+
+    @Override
+    public String getValue() {
+        String result = "Value=" + currentValue + "; Timestamp=" + currentTimestamp;
+        return result;
+        //return temp;
+    }
+
+    public  String getValueAlt(){
+        return alternativeString;
+    }
+
+    public String getType(){
+        return type;
+    }
+
+    protected void initialize(UaClient client) throws SecureIdentityException, IOException, UnknownHostException {
 		// *** Application Description is sent to the server
 		ApplicationDescription appDescription = new ApplicationDescription();
 		appDescription.setApplicationName(new LocalizedText("DHBW Client",Locale.GERMAN));

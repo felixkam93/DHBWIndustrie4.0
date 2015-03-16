@@ -17,4 +17,15 @@ public class ERPAdapter implements DataAdapter {
 		return false;
 	}
 
+    @Override
+    public String getValue() {
+        String result = "";
+        return result;
+    }
+
+    @Override
+    public String getType() {
+        return null;
+    }
+
 }
