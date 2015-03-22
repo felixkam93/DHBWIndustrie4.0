@@ -10,13 +10,13 @@
 		public static void main(String[] args) {
 	 
 		  Customer customer = new Customer();
-		  customer.setId(100);
-		  customer.setName("Naddl");
+		  customer.setId(101);
+		  customer.setName("Felix");
 		  customer.setAge(24);
 	 
 		  try {
 	 
-			File file = new File("C:\\Users\\Naddl\\Documents\\Uni\\file.xml");
+			File file = new File("C:\\Users\\Felix\\Desktop\\file.xml");
 			JAXBContext jaxbContext = JAXBContext.newInstance(Customer.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 	 

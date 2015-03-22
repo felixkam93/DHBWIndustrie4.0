@@ -1,13 +1,15 @@
 package types;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Created by D059496 on 16.03.2015.
  */
+@XmlRootElement
 public class OPCInteger extends OPCObject{
-
+    @XmlElement
     public int value;
-    public String timestamp;
-    public String type;
 
     public OPCInteger(String inputString, String type){
         this.type = type;
@@ -22,4 +24,11 @@ public class OPCInteger extends OPCObject{
     }
 
 
+    public OPCInteger() {
+
+    }
+    public void setValue(String input){
+        value = Integer.parseInt(input);
+
+    };
 }

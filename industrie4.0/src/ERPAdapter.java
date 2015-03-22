@@ -18,6 +18,21 @@ public class ERPAdapter implements DataAdapter {
 	}
 
     @Override
+    public void sendToMQ(String message, String queueName) {
+
+    }
+
+    @Override
+    public void closeConnectionMQ() {
+
+    }
+
+    @Override
+    public String convertToXML() {
+        return null;
+    }
+
+    @Override
     public String getValue() {
         String result = "";
         return result;

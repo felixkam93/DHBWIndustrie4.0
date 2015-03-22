@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -5,6 +6,9 @@ import java.util.Locale;
 
 import com.prosysopc.ua.nodes.UaType;
 import com.prosysopc.ua.nodes.UaVariable;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.LocalizedText;
 import org.opcfoundation.ua.builtintypes.NodeId;
@@ -17,15 +21,26 @@ import com.prosysopc.ua.client.MonitoredDataItem;
 import com.prosysopc.ua.client.MonitoredDataItemListener;
 import com.prosysopc.ua.client.Subscription;
 import com.prosysopc.ua.client.UaClient;
+import types.OPCDouble;
+import types.OPCInteger;
+import types.OPCObject;
+import types.OPCString;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 
 public class OPCAdapter implements DataAdapter{
 	
 	private UaClient client;
+    private OPCObject opcObj;
     private String currentValue;
     private String currentTimestamp;
     private String alternativeString;
     private String type;
+    private Connection connection;
+    private Channel channel;
 
 	public OPCAdapter(String url, int namespaceIndex, String identifier ) throws Exception{
 
@@ -64,8 +79,18 @@ public class OPCAdapter implements DataAdapter{
                         .getAddressSpace().getNode(target2);
                 NodeId dataTypeId = variable.getDataTypeId();
                 UaType dataType = variable.getDataType();
+                String dataTypeString = dataType.getDisplayName().getText();
 
-                this.type = dataType.getDisplayName().getText();
+                switch (dataTypeString.toUpperCase()){
+                    case "INT32": this.opcObj = new OPCInteger();
+                        break;
+                    case "DOUBLE": this.opcObj = new OPCDouble();
+                        break;
+                    case "STRING": this.opcObj = new OPCString();
+                        break;
+                }
+
+                opcObj.type = dataType.getDisplayName().getText();
 
 
 
@@ -76,14 +101,16 @@ public class OPCAdapter implements DataAdapter{
 							DataValue arg2) {
                         //System.out.println(arg1);
                         alternativeString = arg1.toString();
-                        currentValue = arg1.getValue().toString();
-                        currentTimestamp = arg1.getSourceTimestamp().toString();
-                        //System.out.println(currentValue);
-
-
-						
+                        opcObj.setValue(arg1.getValue().toString());
+                        opcObj.timestamp = arg1.getSourceTimestamp().toString();
+                        //System.out.println("OPCObj Value: " + opcObj.value);
 					}
-				});				
+				});
+        //establish connection to the messageQueue Server
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        connection = factory.newConnection();
+        channel = connection.createChannel();
 			}
 	
 
@@ -101,9 +128,59 @@ public class OPCAdapter implements DataAdapter{
 	}
 
     @Override
+    public void sendToMQ(String message, String queueName) throws IOException {
+        //falls queue noch nicht existiert
+        channel.queueDeclare(queueName, false, false, false, null);
+        //sende message im byte format
+        channel.basicPublish("", queueName, null, message.getBytes());
+        System.out.println(" OPCadapter sent '" + message + "'");
+
+
+    }
+
+    @Override
+    public void closeConnectionMQ() throws Exception {
+        channel.close();
+        connection.close();
+    }
+
+
+    @Override
+    public String convertToXML() throws JAXBException {
+        File file = new File("C:\\Users\\Felix\\Desktop\\file.xml");
+        JAXBContext jaxbContext = null;
+
+        OPCInteger opcInt = null;
+        if(opcObj instanceof OPCInteger){
+           // opcInt = (OPCInteger) opcObj;
+             jaxbContext = JAXBContext.newInstance(OPCInteger.class);
+        }else if (opcObj instanceof OPCDouble){
+             jaxbContext = JAXBContext.newInstance(OPCDouble.class);
+        }else if (opcObj instanceof OPCString){
+             jaxbContext = JAXBContext.newInstance(OPCString.class);
+        }
+
+        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+        // output pretty printed
+        jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+        jaxbMarshaller.marshal(opcObj, file);
+        jaxbMarshaller.marshal(opcObj, System.out);
+
+        return file.toString();
+    }
+
+    @Override
     public String getValue() {
         String result = "Value=" + currentValue + "; Timestamp=" + currentTimestamp;
         return result;
+        //return temp;
+    }
+
+    public OPCObject getOpcObj() {
+
+        return this.opcObj;
         //return temp;
     }
 
