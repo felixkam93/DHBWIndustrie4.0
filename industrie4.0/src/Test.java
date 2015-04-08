@@ -15,7 +15,9 @@ public class Test {
             System.out.println("timestamp: " + opcInt.timestamp);
             System.out.println("type: " + type);
             String xml = opcAD1.convertToXML();
-            System.out.println(xml);
+            //System.out.println(xml);
+            opcAD1.sendToMQ(xml, "data");
+            //System.out.println(xml);
 
            // System.out.println("Value: " + value);
            // System.out.println("Timestamp: " + timestamp);

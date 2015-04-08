@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Locale;
@@ -106,9 +107,10 @@ public class OPCAdapter implements DataAdapter{
                         //System.out.println("OPCObj Value: " + opcObj.value);
 					}
 				});
+
         //establish connection to the messageQueue Server
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+        factory.setHost("192.168.1.27");
         connection = factory.newConnection();
         channel = connection.createChannel();
 			}
@@ -146,7 +148,7 @@ public class OPCAdapter implements DataAdapter{
 
 
     @Override
-    public String convertToXML() throws JAXBException {
+    public String convertToXML() throws Exception {
         File file = new File("C:\\Users\\Felix\\Desktop\\file.xml");
         JAXBContext jaxbContext = null;
 
@@ -165,10 +167,17 @@ public class OPCAdapter implements DataAdapter{
         // output pretty printed
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-        jaxbMarshaller.marshal(opcObj, file);
-        jaxbMarshaller.marshal(opcObj, System.out);
+        //jaxbMarshaller.marshal(opcObj, file);
+        //jaxbMarshaller.marshal(opcObj, System.out);
+        java.io.StringWriter sw = new StringWriter();
+        jaxbMarshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+        jaxbMarshaller.marshal(opcObj, sw);
+        String result = sw.toString();
+        sw.close();
+       // System.out.println(result);
 
-        return file.toString();
+
+        return result;
     }
 
     @Override
