@@ -14,8 +14,8 @@ public class ConsumerTest {
         ConsumerTest test = new ConsumerTest();
 
         test.doTest();
-        Thread.sleep(30000);
-        test.channel.basicCancel("felix-pc");
+        //Thread.sleep(30000);
+        //test.channel.basicCancel("felix-pc");
 
     }
 
@@ -24,7 +24,7 @@ public class ConsumerTest {
 
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("192.168.1.27");
+        factory.setHost("192.168.0.192");
         connection = factory.newConnection();
         channel = connection.createChannel();
 
@@ -32,14 +32,18 @@ public class ConsumerTest {
         boolean autoAck = false;
         channel.basicConsume("data", autoAck, "felix-pc",
 
+
                 new DefaultConsumer(channel) {
+                    int i = 0;
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,byte[] body)throws IOException{
                         String routingKey = envelope.getRoutingKey();
                         //String contentType = properties.contentType;
                         long deliveryTag = envelope.getDeliveryTag();
                         String answer = new String(body, "UTF-8");
+                        System.out.println("Message: " + i);
                         System.out.println(answer);
+                        i++;
                         // (process the message components here ...)
                         channel.basicAck(deliveryTag, false);
                     }

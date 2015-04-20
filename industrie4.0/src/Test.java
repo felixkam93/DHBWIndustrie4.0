@@ -1,30 +1,39 @@
+import types.OPCBoolean;
 import types.OPCInteger;
 import types.OPCObject;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
 
 public class Test {
 	
 	public static void main(String[] args) throws Exception{
-		OPCAdapter opcAD1 = new OPCAdapter("opc.tcp://localhost:53530/OPCUA/SimulationServer", 5, "Counter1");
-        Thread.sleep(2000);
-        for(int i = 0; i < 10; i++){
-            OPCInteger opcInt = (OPCInteger) opcAD1.getOpcObj();
-            int value = opcInt.value;
-            String type = opcInt.type;
-            //OPCInteger opcIntObj = new OPCInteger(input, type);
-            System.out.println("Value: " + value);
-            System.out.println("timestamp: " + opcInt.timestamp);
-            System.out.println("type: " + type);
-            String xml = opcAD1.convertToXML();
-            //System.out.println(xml);
-            opcAD1.sendToMQ(xml, "data");
-            //System.out.println(xml);
 
-           // System.out.println("Value: " + value);
-           // System.out.println("Timestamp: " + timestamp);
+        ArrayList<String> sensors = new ArrayList<>();
+        ArrayList<OPCAdapter> adapters = new ArrayList<>();
+        BufferedReader datei = new BufferedReader(new FileReader("C://Users/D059496/Desktop/input2.txt"));
+        String zeile = datei.readLine();
+        //OPCAdapter opcAD1 = new OPCAdapter("opc.tcp://192.168.0.102:49320");
+        OPCAdapter opcAD1 = new OPCAdapter("opc.tcp://WDFN00291103A:53530/OPCUA/SimulationServer");
+        opcAD1.addItem(5, "Counter1");
+
+        /*while(zeile != null){
+            System.out.print(zeile);
+            //opcAD1.addItem(2, zeile);
+            opcAD1.addItem(5, zeile);
+             //OPCAdapter opcAD1 = new OPCAdapter("opc.tcp://192.168.0.102:49320", 2, zeile);
+            //adapters.add(opcAD1);
+            zeile = datei.readLine();
+        }
+        datei.close();*/
 
 
-            System.out.println(opcAD1.getValueAlt());
-            Thread.sleep(2000);
+
+
+        while (true){
+
+
         }
 
 	}
